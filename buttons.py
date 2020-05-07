@@ -1,10 +1,10 @@
 from telebot import types
 
-def create_buttons(list):
+def create_buttons(list, beginning: str):
     """Button creator"""
     keyboard = types.InlineKeyboardMarkup()
-    for item in list:
-        key = types.InlineKeyboardButton(text=str(item), callback_data=str(item))
+    for i, item in enumerate(list):
+        key = types.InlineKeyboardButton(text=str(item), callback_data= beginning + str(i))
         keyboard.add(key)
 
     return keyboard

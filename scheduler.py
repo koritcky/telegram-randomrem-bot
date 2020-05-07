@@ -40,7 +40,7 @@ class MyThread(Thread):
         start = (1 - disp) * period
         end = (1 + disp) * period
 
-        schedule.every(start).to(end).seconds.do(MyThread.send, self.bot, self.chat_id, reminders).tag(self.chat_id)
+        schedule.every(start).to(end).seconds.do(self.send, self.bot, self.chat_id, reminders).tag(self.chat_id)
 
     def apply_changes(self, changes):
         if changes == 'status':
@@ -50,9 +50,14 @@ class MyThread(Thread):
             self.create_schedule()
 
 
-    @staticmethod
-    def send(bot, chat_id, reminders):
-        bot.send_message(chat_id, random.choice(reminders))
-
+    def send(self, bot, chat_id, reminders):
+        try:
+            bot.send_message(chat_id, random.choice(reminders))
+        except IndexError:
+            bot.send_message(chat_id, "I have nothing to send you, so I go *sleeping*. "  
+                                      "Add a reminder and /activate me",
+                             parse_mode='markdown')
+            self.users.update(chat_id, 'status', 0)
+            self.is_active = 0
 # def do_changes(changes):
 #     if changes == 'state':
