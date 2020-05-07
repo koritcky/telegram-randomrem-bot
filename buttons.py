@@ -1,9 +1,15 @@
 from telebot import types
 
-
-def create_buttons():
+def create_buttons(list):
     """Button creator"""
+    keyboard = types.InlineKeyboardMarkup()
+    for item in list:
+        key = types.InlineKeyboardButton(text=str(item), callback_data=str(item))
+        keyboard.add(key)
 
+    return keyboard
+
+def yn_keyboard():
     """Create yes/no keyboard"""
     yn_keyboard = types.InlineKeyboardMarkup()
 
@@ -11,7 +17,9 @@ def create_buttons():
     key_no = types.InlineKeyboardButton(text='No', callback_data='no')
     yn_keyboard.add(key_yes, key_no)  # добавляем кнопку в клавиатуру
 
+    return yn_keyboard
 
+def int_keyboard():
     """Create time intervals keyboard"""
     int_keyboard = types.InlineKeyboardMarkup()
 
@@ -24,5 +32,5 @@ def create_buttons():
 
     int_keyboard.add(key_half, key_1, key_2, key_3, key_5, key_manual)
 
+    return int_keyboard
 
-    return yn_keyboard, int_keyboard
