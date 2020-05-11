@@ -1,7 +1,7 @@
 import schedule
 import time
 from threading import Thread
-from users_db import Users
+from db.users_db import Users
 import queue
 import random
 
@@ -33,6 +33,7 @@ class MyThread(Thread):
             time.sleep(1)
 
     def create_schedule(self):
+
         period = self.users.select(self.chat_id, 'period')
         reminders = self.users.select(self.chat_id, 'reminders')
 
@@ -45,9 +46,10 @@ class MyThread(Thread):
     def apply_changes(self, changes):
         if changes == 'status':
             self.is_active = self.users.select(self.chat_id, changes)
-        if (changes == 'period') or (changes == 'reminders'):
+        elif (changes == 'period') or (changes == 'reminders'):
             schedule.clear(self.chat_id)
             self.create_schedule()
+
 
 
     def send(self, bot, chat_id, reminders):
@@ -59,5 +61,4 @@ class MyThread(Thread):
                              parse_mode='markdown')
             self.users.update(chat_id, 'status', 0)
             self.is_active = 0
-# def do_changes(changes):
-#     if changes == 'state':
+

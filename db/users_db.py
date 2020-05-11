@@ -6,6 +6,8 @@ class Users:
         self.connection = sqlite3.connect(database, check_same_thread=False)
         self.cursor = self.connection.cursor()
 
+        self.columns = ['reminders', 'period', 'status', 'active_time']
+
         if database == ':memory:':
             # Create the table
             self.cursor.execute('''
@@ -14,19 +16,12 @@ class Users:
                 reminders blob,
                 period real,
                 status integer,
+                active_time text, 
                 UNIQUE(chat_id)
             )''')
 
 
-    def select_all(self):
-        """
-        Get all data from table
-        """
-        with self.connection:
-            return self.cursor.execute("SELECT * FROM users").fetchall()
-
-
-    def insert(self, chat_id, reminders, period, status=1):
+    def insert(self, chat_id, reminders, period, status=1, active_time='10:00-22:00'):
         """
         Creates new user
         :param chat_id: users's chat_id
@@ -37,31 +32,31 @@ class Users:
         """
         with self.connection:
             try:
-                self.cursor.execute("INSERT INTO users VALUES (:chat_id, :reminders, :period, :status)", {
-                    'chat_id': chat_id, 'reminders': pickle.dumps(reminders), 'period': period, 'status': status
+                self.cursor.execute("INSERT INTO users VALUES (:chat_id, :reminders, :period, :status, :active_time)", {
+                    'chat_id': chat_id, 'reminders': pickle.dumps(reminders), 'period': period, 'status': status, 'active_time': active_time
                 })
             except sqlite3.IntegrityError:
                 pass
 
     def select(self, chat_id, column):
-        if column in ['reminders', 'period', 'status']:
+        if column in self.columns:
             with self.connection:
                 result = self.cursor.execute(f"SELECT {column} FROM users WHERE chat_id={chat_id}").fetchone()[0]
                 if column == 'reminders':
                     result = pickle.loads(result)
             return result
         else:
-            raise Warning("Choose from existing variants: 'reminders', 'period', 'status")
+            raise Warning(f"Choose from existing variants: {str(self.columns)}")
 
     def update(self, chat_id, column, new_value):
-        if column in ['reminders', 'period', 'status']:
+        if column in self.columns:
             with self.connection:
                 if column =='reminders':
                     new_value = pickle.dumps(new_value)
                 self.cursor.execute(f'UPDATE users SET {column}=:new_value WHERE chat_id=:chat_id',
                                     {'chat_id': chat_id, 'new_value': new_value})
         else:
-            raise Warning("Choose from existing variants: 'period', 'status'")
+            raise Warning(f"Choose from existing variants: {str(self.columns)}")
 
     def add_reminder(self, chat_id, reminder):
         list = self.select(chat_id, 'reminders')
@@ -88,15 +83,4 @@ class Users:
         with self.connection:
             self.cursor.execute(f'UPDATE users SET reminders= :reminders WHERE chat_id=:chat_id',
                                 {'reminders': list, 'chat_id': chat_id})
-# users = Users(':memory:')
-# chat_id = 6456546
-# users.insert(chat_id, ['Meditate', 'Breathe!'], 5, 1)
-# print(users.select(chat_id, 'period'))
-# users.update(chat_id, 'period', 10)
-# print(users.select(chat_id, 'period'))
-# users.add_reminder(chat_id, 'hello')
-# print(users.select(chat_id, 'reminders'))
-# users.remove_reminder(chat_id, 'Brethe!')
-# print(users.select(chat_id, 'reminders'))
-
 
