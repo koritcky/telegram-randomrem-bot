@@ -1,14 +1,13 @@
 # Double pendulum simulation
 
-To start simulation run `main.py`.
+To start the bot run `main.py`. In telegram bot's name is `@RandomRem_bot`
 
 ## Description
-This program simulates double pendulum dynamics with different initial parameters like: masses of balls, rods lengths and deflection angles. An interesting phenomena behind this process in a chaos behavior, when initial parameters has a huge influence of the future evolution.
+This is telegram bot that sends random messages from the given list. User can change average interval between reminders, add new ones, delete them, activate and deactivate bot. The list of all  commands can be found 
 
-## How does it work
-This program has 4 modules in `\modules`:    
-- **pendulum.py**  Creates a pendulum instance and calculates its evolution in time solving differential equations with `scipy.integrate.odeint`.  
-- **frames.py** For each pendulum on each time step creates a shot with `matplotlib` and save it in `\frames` dir.  
-- **window.py** Draw a simple GUI with `tkinter`. And has a function `simulation` that integrates all of the program flow.  
-- **gif_player.py** Draw an animation in the `tkinter` window from files  in `\frames`
-
+## About 
+Directory `modules` consists of  3 files: 
+- `bot.py` is the main one, that handles all commands and messages
+- `scheduler` creates personal thread for each user that communicates with bot. This thread contains schedules for sending  messages and handles all the changes users apply via queues to the threads.
+- `buttons.py` contains auxilary functions for drawing inline keyboards for some handlers.
+Other directories are self explanatory.

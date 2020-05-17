@@ -2,13 +2,10 @@ import telebot
 from telebot import apihelper
 import random
 from threading import Thread
-import re
 
-import schedule
 import modules.buttons as buttons
 from db.users_db import Users
 from modules.scheduler import MyThread
-
 
 # Connect to proxy
 password = 'Zetsalexproxy'
@@ -19,10 +16,12 @@ API = '1154226858:AAEuhWtqnsaxRazWr7-AoXZa89Cg6rNmNC8'
 bot = telebot.TeleBot(API)
 
 # Initialize db
-users = Users('db/users.db')
+users = Users(':memory:')
 
-# Queue for pausing/activation remainders flow
+# Dic of all the existing threads for all users
 threads = {}
+
+# Auxiliary dir for temporal messages before they goes to
 temp_msg = {}
 
 # Create buttons
@@ -32,7 +31,6 @@ int_keyboard = buttons.int_keyboard()
 # Initial parameters for the sake of testing
 init_reminders = ['Breathe!', 'Call mom']
 init_period = 20
-
 
 
 @bot.message_handler(commands=['help'])
@@ -67,6 +65,8 @@ def show_random_once(message):
         threads[chat_id] = MyThread(chat_id, users, bot)
 
     bot.send_message(chat_id, random.choice(users.select(chat_id, 'reminders')))
+
+
 #######################################
 
 
@@ -74,7 +74,6 @@ def show_random_once(message):
 @bot.message_handler(commands=['remove', 'list'])
 def remove_reminder(message):
     """Remove the reminder"""
-    message
     chat_id = message.from_user.id
     if chat_id not in threads.keys():
         threads[chat_id] = MyThread(chat_id, users, bot)
@@ -107,11 +106,14 @@ def callback_remove_reminder(call):
                               text=f"Reminder \"{reminder}\" is removed")
 
     bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+
+
 #######################################
 
 
 @bot.message_handler(commands=['deactivate'])
 def deactivate(message):
+    """Manual deactivation"""
     chat_id = message.from_user.id
     if chat_id not in threads.keys():
         threads[chat_id] = MyThread(chat_id, users, bot)
@@ -124,6 +126,7 @@ def deactivate(message):
 
 @bot.message_handler(commands=['activate'])
 def activate(message):
+    """Manual activation"""
     chat_id = message.from_user.id
 
     if chat_id not in threads.keys():
@@ -137,6 +140,7 @@ def activate(message):
 
 @bot.message_handler(commands=['status'])
 def status(message):
+    """Shows bot's current status"""
     chat_id = message.from_user.id
 
     if chat_id not in threads.keys():
@@ -157,6 +161,7 @@ def status(message):
 #######################################
 @bot.message_handler(commands=['period'])
 def set_period(message):
+    """Setting period for messages sender"""
     chat_id = message.from_user.id
 
     if chat_id not in threads.keys():
@@ -211,8 +216,10 @@ def set_period_manual(message):
         bot.register_next_step_handler(message, set_period_manual)
 #######################################
 
+
 @bot.message_handler(commands=['clear'])
 def clear_reminders(message):
+    """Delete all reminders"""
     chat_id = message.from_user.id
     users.update(chat_id, 'reminders', init_reminders)
 
@@ -262,6 +269,8 @@ def callback_new_reminder(call):
                                   text=f"\"{msg}\" is now in the pool")
 
     bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+
+
 #######################################
 
 @bot.message_handler(content_types=['photo', 'video', 'sticker', 'audio', 'voice'])
@@ -269,9 +278,9 @@ def sorry(message):
     chat_id = message.from_user.id
     bot.send_message(chat_id, 'Sorry, I can handle only text reminders. But stay updated!')
 
+
 def main():
     Thread(target=bot.polling, kwargs={'none_stop': True, 'interval': 0}).start()
-
 
 # #######################################
 # @bot.message_handler(commands=['active_time'])

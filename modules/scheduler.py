@@ -19,7 +19,6 @@ class MyThread(Thread):
         self.start()
 
     def scheduler(self, changes_queue):
-
         while True:
             try:
                 changes = changes_queue.get(timeout=0.1)
@@ -49,8 +48,6 @@ class MyThread(Thread):
         elif (changes == 'period') or (changes == 'reminders'):
             schedule.clear(self.chat_id)
             self.create_schedule()
-
-
 
     def send(self, bot, chat_id, reminders):
         try:
